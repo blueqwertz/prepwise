@@ -5,6 +5,46 @@ import { desc } from "drizzle-orm"
 
 export const dynamic = "force-dynamic"
 
+export async function POST(request: Request) {
+  try {
+    const { generateMealPlan } = await import("@/lib/openai")
+
+    const body = await request.json()
+
+    if (!body.budget || body.budget <= 0) {
+      return NextResponse.json(
+        { error: "Please provide a valid budget greater than 0." },
+        { status: 400 }
+      )
+    }
+
+    if (!body.days || body.days < 1 || body.days > 14) {
+      return NextResponse.json(
+        { error: "Please provide between 1 and 14 days." },
+        { status: 400 }
+      )
+    }
+
+    const mealPlan = await generateMealPlan({
+      budget: body.budget,
+      days: body.days,
+      people: body.people || 2,
+      dietary: body.dietary || [],
+      cuisine: body.cuisine || [],
+      restrictions: body.restrictions || "",
+      additionalNotes: body.additionalNotes || "",
+    })
+
+    return NextResponse.json(mealPlan)
+  } catch (error) {
+    console.error("Meal plan generation failed:", error)
+    return NextResponse.json(
+      { error: "Failed to generate meal plan. Please try again." },
+      { status: 500 }
+    )
+  }
+}
+
 export async function GET() {
   try {
     const db = getDb()
