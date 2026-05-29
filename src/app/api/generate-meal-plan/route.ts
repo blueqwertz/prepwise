@@ -3,6 +3,8 @@ import { getDb } from "@/db"
 import { mealPlans } from "@/db/schema"
 import { desc } from "drizzle-orm"
 
+export const dynamic = "force-dynamic"
+
 export async function GET() {
   try {
     const db = getDb()
